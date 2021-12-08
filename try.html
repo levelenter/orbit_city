@@ -1,0 +1,127 @@
+<!-- 
+https://www.npmjs.com/package/aframe-orbit-controls
+-->
+<html>
+<head>
+	<script src="https://unpkg.com/aframe"></script>
+ 	<script src="https://unpkg.com/aframe-orbit-controls@1.2.0/dist/aframe-orbit-controls.min.js"></script> 
+<!--   <script src="./libs/anime-master/lib/anime.min.js"></script> 
+ -->
+ </head>
+<style>
+.contents{
+  margin-top:10%;
+  margin-left:10%;
+  padding-top:3%;
+  padding-left:3%;
+  width: 70%;
+  height: 60%;
+  background: rgb(43, 29, 29,0.7);
+  border-radius: 20px;
+  color:#070707;
+}
+.backdrop{
+    background: rgba(255,255,255,0.3);z-index: 2000; width: 100%; height: 100vh; top:0;left:0;
+    background-image: url("./close.svg");
+    background-repeat: no-repeat;
+    background-size:64px;
+    position: absolute;
+    padding: 10px 20px;
+}
+.hidden {
+  display: none;
+}
+.block {
+  display: block;
+}
+</style>
+<script type='text/javascript'>
+AFRAME.registerComponent('scene-init', {
+  init: function(){
+    // // モバイルでなければ
+    // if(!AFRAME.utils.device.isMobile()){
+    //   // const cursor = document.querySelector("#cursor");
+    //   // cursor.setAttribute( "cursor","rayOrigin: mouse");
+    // }
+
+    const dackdrop = document.querySelector(".close");
+    dackdrop.addEventListener("click",(event)=>{
+      event.target.classList.toggle("block");
+      event.target.classList.toggle("hidden");
+
+      const cam = document.querySelector("[camera]");
+      const prop = { zoom:10}
+      AFRAME.ANIME({
+        targets: prop,
+        zoom: 1,
+        duration: 1000,
+        easing: 'easeInOutExpo',
+        update:()=>{
+          cam.setAttribute("camera","zoom",prop.zoom);
+        }
+      });
+
+    });
+  }
+});
+
+AFRAME.registerComponent('cam-init', {
+  init: function(){
+    const cam = document.querySelector("[camera]");
+    this.clicked = false;
+    this.el.addEventListener("click",(event)=>{
+      if(!this.clicked){
+        alert("a")
+        const prop = { zoom:1}
+        cam.setAttribute("orbit-controls","target",this.el.object3D.position)
+        AFRAME.ANIME({
+          targets: prop,
+          zoom: 10,
+          duration: 1000,
+          easing: 'easeInOutExpo',
+          update:()=>{
+            cam.setAttribute("camera","zoom",prop.zoom);
+          },
+          changeComplete:()=>{
+            const dackdrop = document.querySelector(".close");
+            dackdrop.classList.toggle("block");
+            dackdrop.classList.toggle("hidden");
+          }
+        });
+
+        this.clicked = !this.clicked;
+      }
+    });
+  }
+});
+</script>
+<body style=" width: 100%; height: 100%;">
+<a-scene scene-init>
+  <a-assets>
+    <a-asset-item id="city" src="./city1/VRtown210422.glb"></a-asset-item>
+  </a-assets>
+
+  <a-entity
+    camera
+    orbit-controls="autoRotate:true;autoRotateSpeed:0.02;initialPosition:0 20 15;maxPolarAngle:80;minPolarAngle:60;minDistance:2;minDistance:10;minAzimuthAngle:10;maxAzimuthAngle:20;"
+  >
+    <!-- <a-entity id="cursor" ></a-entity> -->
+    <a-entity id="cursor" cursor="rayOrigin: mouse;fuse: false"></a-entity>
+  </a-entity>
+
+  <!-- minDistance:10;maxDistance:10;minZoom:10;maxZoom:1; -->
+  <a-entity position="0 -7 0" gltf-model="#city" ></a-entity>
+  <a-box position="-20 1 -1" cam-init data-message="white"></a-box>
+
+  <a-box position="15 1 -3" cam-init color="red" data-message="red"></a-box>
+
+  <a-box position="0 1 0" color="yellow" cam-init data-message="yellow"></a-box>
+
+  <a-sky color="skyblue" />
+</a-scene>
+<div id="backdrop" class="backdrop hidden close" >
+  <!-- <span><img src="close.svg" width="64px" class="close" /></span> -->
+  <div id="message" class="contents" style="color:whitesmoke"></div>
+</div>
+</body>
+</html>
